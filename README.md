@@ -11,8 +11,8 @@ This is a very simple and limited PoC :
  - Only the basic ASCII chars from 32 to 127 are rendered,
  - The layout engine only does left-justification.
 
- I might improve it one day, but the only goal for now is to have something ready to
- help me during game jams ;)
+I might improve it one day, but the only goal for now is to have something ready to
+help me during game jams ;)
 
 ## Usage
 

@@ -9,10 +9,14 @@
         display: block;
         margin: 1em auto;
     }
+    p {
+        text-align: center;
+    }
 </style>
 <body>
 <canvas id="font-builder" width="640" height="320"></canvas>
 <textarea id="font-builder-demo-input">Font Builder :)</textarea>
+<p><a href="https://github.com/kmichel/font-builder">Project page</a></p>
 <script src="text.js"></script>
 <script src="main.js"></script>
 <script>FontBuilder.demo(document.getElementById("font-builder"), document.getElementById("font-builder-demo-input"));</script>

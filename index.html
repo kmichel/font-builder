@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Font-Builder demo</title>
+</head>
+<style>
+    #font-builder-demo-input,
+    #font-builder {
+        display: block;
+        margin: 1em auto;
+    }
+</style>
+<body>
+<canvas id="font-builder" width="640" height="320"></canvas>
+<textarea id="font-builder-demo-input">Font Builder :)</textarea>
+<script src="text.js"></script>
+<script src="main.js"></script>
+<script>FontBuilder.demo(document.getElementById("font-builder"), document.getElementById("font-builder-demo-input"));</script>
+</body>
+</html>

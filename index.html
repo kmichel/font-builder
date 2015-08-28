@@ -4,10 +4,19 @@
     <title>Font-Builder demo</title>
 </head>
 <style>
-    #font-builder-demo-input,
     #font-builder {
         display: block;
         margin: 1em auto;
+    }
+
+    form {
+        text-align: center;
+    }
+
+    form label,
+    form textarea {
+        display: block;
+        margin: 0.5em auto;
     }
     p {
         text-align: center;
@@ -15,10 +24,22 @@
 </style>
 <body>
 <canvas id="font-builder" width="640" height="320"></canvas>
-<textarea id="font-builder-demo-input">Font Builder :)</textarea>
+<form>
+    <label>Alignment : <select id="font-builder-demo-alignment">
+        <option value="left">Left</option>
+        <option value="center">Center</option>
+        <option value="right">Right</option>
+    </select></label>
+<textarea id="font-builder-demo-input">Font Builder :
+Just a simple demo :)</textarea>
+</form>
 <p><a href="https://github.com/kmichel/font-builder">Project page</a></p>
 <script src="text.js"></script>
 <script src="main.js"></script>
-<script>FontBuilder.demo(document.getElementById("font-builder"), document.getElementById("font-builder-demo-input"));</script>
+<script>FontBuilder.demo(
+        document.getElementById("font-builder"),
+        document.getElementById("font-builder-demo-input"),
+        document.getElementById("font-builder-demo-alignment")
+);</script>
 </body>
 </html>

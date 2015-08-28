@@ -1,20 +1,31 @@
 "use strict";
 
 var FbText = {
-    newline : "\n".charCodeAt(0),
-    space: " ".charCodeAt(0),
-    layout: function(fontInfo, text, callback) {
-        var x=0;
-        var y=0;
+    NEWLINE: "\n".charCodeAt(0),
+    SPACE: " ".charCodeAt(0),
+    LEFT: "left",
+    CENTER: "center",
+    RIGHT: "right",
+    layout: function (fontInfo, text, options, callback) {
+        var alignment = options === undefined ? FbText.LEFT : options.alignment;
+        if (alignment !== FbText.LEFT) {
+            var advances = FbText.getLineAdvances(fontInfo, text);
+            var maxAdvance = Math.max.apply(null, advances);
+            var alignmentRatio = alignment === FbText.CENTER ? 0.5 : 1.0;
+        }
+        var lineNumber = 0;
+        var x = alignment !== FbText.LEFT ? alignmentRatio * (maxAdvance - advances[lineNumber]) : 0;
+        var y = 0;
         var inverseTextureSize = 1 / fontInfo.textureSize;
-        for (var i =0; i<text.length; ++i) {
+        for (var i = 0; i < text.length; ++i) {
             var codepoint = text.charCodeAt(i);
-            if (codepoint === FbText.newline) {
-                x = 0;
+            if (codepoint === FbText.NEWLINE) {
+                lineNumber += 1;
+                x = alignment !== FbText.LEFT ? alignmentRatio * (maxAdvance - advances[lineNumber]) : 0;
                 y -= fontInfo.lineGap;
             } else {
                 if (!fontInfo.glyphs.hasOwnProperty(codepoint))
-                    codepoint = FbText.space;
+                    codepoint = FbText.SPACE;
                 var glyph = fontInfo.glyphs[codepoint];
                 var xMin = x + glyph.left;
                 var xMax = xMin + glyph.width;
@@ -29,14 +40,32 @@ var FbText = {
             }
         }
     },
-    getExtent: function(fontInfo, text) {
+    getLineAdvances: function (fontInfo, text) {
+        var advances = [];
+        var advance = 0;
+        for (var i = 0; i < text.length; ++i) {
+            var codepoint = text.charCodeAt(i);
+            if (codepoint === FbText.NEWLINE) {
+                advances.push(advance);
+                advance = 0;
+            } else {
+                if (!fontInfo.glyphs.hasOwnProperty(codepoint))
+                    codepoint = FbText.SPACE;
+                var glyph = fontInfo.glyphs[codepoint];
+                advance += glyph.advance;
+            }
+        }
+        advances.push(advance);
+        return advances;
+    },
+    getExtent: function (fontInfo, text, options) {
         var extent = {
             xMin: Infinity,
             xMax: -Infinity,
             yMin: Infinity,
             yMax: -Infinity
         };
-        FbText.layout(fontInfo, text, function(xMin, xMax, yMin, yMax) {
+        FbText.layout(fontInfo, text, options, function (xMin, xMax, yMin, yMax) {
             extent.xMin = Math.min(extent.xMin, xMin);
             extent.xMax = Math.max(extent.xMax, xMax);
             extent.yMin = Math.min(extent.yMin, yMin);
@@ -44,9 +73,9 @@ var FbText = {
         });
         return extent;
     },
-    getLayout: function(fontInfo, text) {
+    getLayout: function (fontInfo, text, options) {
         var rects = [];
-        FbText.layout(fontInfo, text, function(xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
+        FbText.layout(fontInfo, text, options, function (xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
             rects.push({
                 xMin: xMin,
                 xMax: xMax,
@@ -55,15 +84,16 @@ var FbText = {
                 uMin: uMin,
                 uMax: uMax,
                 vMin: vMin,
-                vMax: vMax});
+                vMax: vMax
+            });
         });
         return rects;
     },
-    getTriangles: function(fontInfo, text) {
-        var trianglesCount = text.replace("\n","").length;
+    getTriangles: function (fontInfo, text, options) {
+        var trianglesCount = text.replace("\n", "").length;
         var triangles = new Float32Array(4 * 3 * 2 * trianglesCount);
         var position = 0;
-        FbText.layout(fontInfo, text, function(xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
+        FbText.layout(fontInfo, text, options, function (xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
             triangles[position++] = xMin;
             triangles[position++] = yMax;
             triangles[position++] = uMin;

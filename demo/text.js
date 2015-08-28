@@ -1,13 +1,13 @@
 "use strict";
 
 var FbText = {
-    newline : "\n".charCodeAt(0),
+    newline: "\n".charCodeAt(0),
     space: " ".charCodeAt(0),
-    layout: function(fontInfo, text, callback) {
-        var x=0;
-        var y=0;
+    layout: function (fontInfo, text, callback) {
+        var x = 0;
+        var y = 0;
         var inverseTextureSize = 1 / fontInfo.textureSize;
-        for (var i =0; i<text.length; ++i) {
+        for (var i = 0; i < text.length; ++i) {
             var codepoint = text.charCodeAt(i);
             if (codepoint === FbText.newline) {
                 x = 0;
@@ -29,14 +29,14 @@ var FbText = {
             }
         }
     },
-    getExtent: function(fontInfo, text) {
+    getExtent: function (fontInfo, text) {
         var extent = {
             xMin: Infinity,
             xMax: -Infinity,
             yMin: Infinity,
             yMax: -Infinity
         };
-        FbText.layout(fontInfo, text, function(xMin, xMax, yMin, yMax) {
+        FbText.layout(fontInfo, text, function (xMin, xMax, yMin, yMax) {
             extent.xMin = Math.min(extent.xMin, xMin);
             extent.xMax = Math.max(extent.xMax, xMax);
             extent.yMin = Math.min(extent.yMin, yMin);
@@ -44,9 +44,9 @@ var FbText = {
         });
         return extent;
     },
-    getLayout: function(fontInfo, text) {
+    getLayout: function (fontInfo, text) {
         var rects = [];
-        FbText.layout(fontInfo, text, function(xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
+        FbText.layout(fontInfo, text, function (xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
             rects.push({
                 xMin: xMin,
                 xMax: xMax,
@@ -55,15 +55,16 @@ var FbText = {
                 uMin: uMin,
                 uMax: uMax,
                 vMin: vMin,
-                vMax: vMax});
+                vMax: vMax
+            });
         });
         return rects;
     },
-    getTriangles: function(fontInfo, text) {
-        var trianglesCount = text.replace("\n","").length;
+    getTriangles: function (fontInfo, text) {
+        var trianglesCount = text.replace("\n", "").length;
         var triangles = new Float32Array(4 * 3 * 2 * trianglesCount);
         var position = 0;
-        FbText.layout(fontInfo, text, function(xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
+        FbText.layout(fontInfo, text, function (xMin, xMax, yMin, yMax, uMin, uMax, vMin, vMax) {
             triangles[position++] = xMin;
             triangles[position++] = yMax;
             triangles[position++] = uMin;

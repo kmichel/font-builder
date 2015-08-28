@@ -11,19 +11,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+struct Rect {
+    uint32_t width;
+    uint32_t height;
+};
+
 static uint32_t max(uint32_t a, uint32_t b) {
     return a > b ? a : b;
-}
-
-static uint32_t next_power_of_two(uint32_t value) {
-    value--;
-    value |= value >> 1;
-    value |= value >> 2;
-    value |= value >> 4;
-    value |= value >> 8;
-    value |= value >> 16;
-    value++;
-    return value;
 }
 
 static unsigned char* get_file_content(char const* filename) {
@@ -87,20 +81,45 @@ int main(int argc, char** argv) {
 
     float scale = stbtt_ScaleForMappingEmToPixels(&font_info, font_size);
 
-    uint32_t margin = 1;
+    Rect* glyph_rects = new Rect[127 - 32];
+    uint32_t max_height = 0;
+    for (uint32_t codepoint = 32; codepoint < 127; ++codepoint) {
+        int32_t glyph_x_min;
+        int32_t glyph_y_min;
+        int32_t glyph_x_max;
+        int32_t glyph_y_max;
+        int32_t glyph_index = stbtt_FindGlyphIndex(&font_info, static_cast<int32_t>(codepoint));
+        stbtt_GetGlyphBitmapBoxSubpixel(
+                &font_info, glyph_index, scale, scale, 0, 0, &glyph_x_min, &glyph_y_min, &glyph_x_max, &glyph_y_max);
+        Rect& glyph_rect = glyph_rects[codepoint - 32];
+        glyph_rect.width = static_cast<uint32_t>(glyph_x_max - glyph_x_min);
+        glyph_rect.height = static_cast<uint32_t>(glyph_y_max - glyph_y_min);
+        max_height = max(max_height, glyph_rect.height);
+    }
 
-    int32_t font_xmin;
-    int32_t font_ymin;
-    int32_t font_xmax;
-    int32_t font_ymax;
-    stbtt_GetFontBoundingBox(&font_info, &font_xmin, &font_ymin, &font_xmax, &font_ymax);
-    float scaled_width = scale * (font_xmax - font_xmin);
-    float scaled_height = scale * (font_ymax - font_ymin);
-    uint32_t tile_width = static_cast<uint32_t>(ceilf(scaled_width));
-    uint32_t tile_height = static_cast<uint32_t>(ceilf(scaled_height));
-    uint32_t outer_tile_width = tile_width + margin;
-    uint32_t outer_tile_height = tile_height + margin;
-    uint32_t texture_size = next_power_of_two(2 * margin + 10 * max(outer_tile_width, outer_tile_height));
+    uint32_t margin = 1;
+    uint32_t texture_size = 32;
+    {
+        uint32_t x = margin;
+        uint32_t y = margin;
+        for (int32_t i = 0; i < 127 - 32; ++i) {
+            Rect& glyph_rect = glyph_rects[i];
+            if (glyph_rect.width != 0 && glyph_rect.height != 0) {
+                if (x + glyph_rect.width + 2 * margin < texture_size) {
+                    x += glyph_rect.width + margin;
+                } else if (y + max_height + 2 * margin < texture_size) {
+                    x = glyph_rect.width + 2 * margin;
+                    y += max_height + margin;
+                } else {
+                    texture_size *= 2;
+                    x = margin;
+                    y = margin;
+                    i = -1;
+                }
+            }
+        }
+    }
+
     int32_t ascent;
     int32_t descent;
     int32_t line_gap;
@@ -110,13 +129,17 @@ int main(int argc, char** argv) {
 
     unsigned char* pixels = new unsigned char[texture_size * texture_size];
 
+    uint32_t x = margin;
+    uint32_t y = margin;
     for (uint32_t codepoint = 32; codepoint < 127; ++codepoint) {
-        uint32_t x = margin + ((codepoint - 32) % 10) * outer_tile_width;
-        uint32_t y = margin + ((codepoint - 32) / 10) * outer_tile_height;
-
+        Rect& glyph_rect = glyph_rects[codepoint - 32];
+        if (x + glyph_rect.width + 2 * margin >= texture_size) {
+            x = margin;
+            y += max_height + margin;
+        }
         int32_t glyph_index = stbtt_FindGlyphIndex(&font_info, static_cast<int32_t>(codepoint));
         stbtt_MakeGlyphBitmapSubpixel(
-                &font_info, pixels + x + (y * texture_size), static_cast<int32_t>(tile_width), static_cast<int32_t>(tile_height),
+                &font_info, pixels + x + (y * texture_size), static_cast<int32_t>(glyph_rect.width), static_cast<int32_t>(glyph_rect.height),
                 static_cast<int32_t>(texture_size), scale, scale, 0, 0, glyph_index);
 
         int32_t glyph_advance_width;
@@ -136,6 +159,9 @@ int main(int argc, char** argv) {
                 output_json, "        \"%i\": {\"x\": %i, \"y\": %i, \"left\": %i, \"top\": %i, \"width\": %i, \"height\": %i, \"advance\": %i}%s\n", codepoint,
                 x, y, glyph_x_min, -glyph_y_min, static_cast<uint32_t>(glyph_x_max - glyph_x_min), static_cast<uint32_t>(glyph_y_max - glyph_y_min),
                 static_cast<uint32_t>(glyph_advance_width), codepoint == 126 ? "" : ",");
+
+        if (glyph_rect.width != 0)
+            x += glyph_rect.width + margin;
     }
 
     fprintf(output_json, "    }\n}\n");
@@ -144,6 +170,7 @@ int main(int argc, char** argv) {
     stbi_write_png(argv[4], static_cast<int32_t>(texture_size), static_cast<int32_t>(texture_size), 1, pixels, static_cast<int32_t>(texture_size));
 
     delete[] pixels;
+    delete[] glyph_rects;
 
     return 0;
 }

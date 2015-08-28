@@ -5,10 +5,8 @@ A very crude offline helper for drawing text in WebGL.
 This reads a ttf file and build a texture and a json descriptor file which can then be used
 to layout and draw text as shown in [the demo](https://kmichel.github.io/font-builder).
 
-This is a very simple and limited PoC :
-
- - Individuals glyphs are not tightly packed in the texture,
- - Only the basic ASCII chars from 32 to 127 are rendered.
+This is a very simple and limited PoC, only the basic ASCII chars from 32 to 126 are rendered
+and packing could be improved.
  
 I might improve it one day, but the only goal for now is to have something ready to
 help me during game jams ;)

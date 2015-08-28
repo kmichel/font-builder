@@ -8,9 +8,8 @@ to layout and draw text as shown in [the demo](https://kmichel.github.io/font-bu
 This is a very simple and limited PoC :
 
  - Individuals glyphs are not tightly packed in the texture,
- - Only the basic ASCII chars from 32 to 127 are rendered,
- - The layout engine only does left-justification.
-
+ - Only the basic ASCII chars from 32 to 127 are rendered.
+ 
 I might improve it one day, but the only goal for now is to have something ready to
 help me during game jams ;)
 

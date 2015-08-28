@@ -50,7 +50,7 @@ var FontBuilder = {
 
                             if (extent.xMin != Infinity) {
 
-                                var scale = (0.8 + 0.2 * Math.sin(time));
+                                var scale = (0.8 + 0.5 * Math.sin(time));
                                 gl.uniformMatrix3fv(viewMatrixUniform, false, new Float32Array([
                                     2 / canvas.clientWidth * scale, 0, 0,
                                     0, 2 / canvas.clientHeight * scale, 0,

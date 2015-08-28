@@ -1,5 +1,5 @@
 var FontBuilder = {
-    demo: function (canvas, input) {
+    demo: function (canvas, input, alignment) {
         var gl = canvas.getContext("webgl", {alpha: false}) || canvas.getContext("experimental-webgl", {alpha: false});
 
         FontBuilder.loadString("vertex.glsl", function (vertexSource) {
@@ -46,7 +46,7 @@ var FontBuilder = {
                             time += 1 / 60;
 
                             var text = input.value;
-                            var extent = FbText.getExtent(fontInfo, text);
+                            var extent = FbText.getExtent(fontInfo, text, {alignment: alignment.value});
 
                             if (extent.xMin != Infinity) {
 
@@ -54,14 +54,15 @@ var FontBuilder = {
                                 gl.uniformMatrix3fv(viewMatrixUniform, false, new Float32Array([
                                     2 / canvas.clientWidth * scale, 0, 0,
                                     0, 2 / canvas.clientHeight * scale, 0,
-                                    (100 * Math.cos(time) - extent.xMax) / canvas.clientWidth * scale, 100 * Math.sin(3 * time) / canvas.clientHeight * scale, 1
+                                    (50 * Math.cos(time) - extent.xMin - extent.xMax) / canvas.clientWidth * scale,
+                                    (50 * Math.sin(3 * time) - extent.yMax - extent.yMin) / canvas.clientHeight * scale, 1
                                 ]));
 
                                 gl.uniform1i(samplerUniform, 0);
                                 gl.activeTexture(gl.TEXTURE0);
                                 gl.bindTexture(gl.TEXTURE_2D, fontTexture);
 
-                                var triangles = FbText.getTriangles(fontInfo, text);
+                                var triangles = FbText.getTriangles(fontInfo, text, {alignment: alignment.value});
                                 gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer);
                                 gl.bufferData(gl.ARRAY_BUFFER, triangles, gl.DYNAMIC_DRAW);
 

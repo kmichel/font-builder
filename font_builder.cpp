@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     int32_t descent;
     int32_t line_gap;
     stbtt_GetFontVMetrics(&font_info, &ascent, &descent, &line_gap);
-    fprintf(output_json, "{\n    \"textureSize\": %i, \"lineGap\": %i,\n", texture_size, static_cast<int32_t>((ascent - descent + line_gap) * scale));
+    fprintf(output_json, "{\n    \"textureSize\": %i,\n    \"lineGap\": %i,\n", texture_size, static_cast<int32_t>((ascent - descent + line_gap) * scale));
     fprintf(output_json, "    \"glyphs\": {\n");
 
     unsigned char* pixels = new unsigned char[texture_size * texture_size];

@@ -1,5 +1,6 @@
 {
-    "textureSize": 1024, "lineGap": 60,
+    "textureSize": 1024,
+    "lineGap": 60,
     "glyphs": {
         "32": {"x": 1, "y": 1, "left": 0, "top": 0, "width": 0, "height": 0, "advance": 12},
         "33": {"x": 103, "y": 1, "left": 3, "top": 37, "width": 8, "height": 37, "advance": 13},
